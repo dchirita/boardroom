@@ -1,0 +1,37 @@
+# Boardroom workspace config: the only input the board needs.
+# /boardroom:setup fills it in by asking you; you can also edit it by hand.
+# Paths are relative to this folder.
+
+company:
+  name: ""
+  stage: ""          # e.g. pre-revenue, first revenue, growing
+  north_star: ""     # the one result the board optimizes, e.g. "first euro of revenue"
+  language: en       # language of the meeting minutes, e.g. en, ro, de
+  context: ""        # optional: hours, budget, constraints. Empty means the board does not assume any.
+
+products: []         # the repos the board studies; each has either repo: or path:
+#  - id: shop        # short name, used in citations: shop:src/app.js:12
+#    repo: git@github.com:org/shop.git   # git URL: the board keeps its own read-only clone in .repos/
+#    # path: ~/work/shop                 # or a local repo folder, anywhere (absolute, ~/, or relative)
+#    branch: main    # the board reads only this branch
+#    kind: product   # product | infra
+#    about: ""       # one sentence
+
+data: []             # read-only commands that print current numbers; run before each meeting
+#  - id: shop-events
+#    product: shop
+#    run: cd ../shop-server && npm run metrics
+
+notes: []            # folders with reports or research (not code), copied read-only and cited as notes
+#  - ../reports
+
+members:             # the board; at most 7. boardroom:ceo always takes part (it writes the synthesis).
+  - boardroom:ceo    # focus: what moves the north star most, what to stop
+  - boardroom:growth # CMO + Sales: cheapest path to revenue (can search the web)
+  - boardroom:tech-risk # CTO + CISO: feasibility, compatibility, security, compliance
+  - boardroom:cfo    # numbers, cost, kill criteria
+#  - legal           # your own seats: .claude/agents/<name>.md in this folder (/boardroom:setup creates them)
+
+work_in_progress:    # a branch is flagged LARGE above either limit
+  max_files: 30
+  max_days: 14

@@ -1,0 +1,10 @@
+{
+  "name": "boardroom",
+  "version": "0.1.0",
+  "description": "A board of AI agents (co-CEO, growth, tech-risk, CFO) that studies a portfolio of product repos read-only, proposes, challenges and synthesizes for the human co-CEO.",
+  "author": {
+    "name": "Digital Utopia"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/dchirita/boardroom"
+}

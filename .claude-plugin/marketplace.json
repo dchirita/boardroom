@@ -1,0 +1,14 @@
+{
+  "name": "boardroom",
+  "owner": {
+    "name": "Digital Utopia"
+  },
+  "description": "Local marketplace for the Boardroom plugin.",
+  "plugins": [
+    {
+      "name": "boardroom",
+      "source": "./",
+      "description": "A board of AI agents for a portfolio of product repos."
+    }
+  ]
+}
