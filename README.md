@@ -32,6 +32,9 @@ You are the other co-CEO: you decide.
    The workspace then reads Boardroom from your clone: after changing it, start a new session in the workspace
    (or run `/reload-plugins`). No reinstall needed.
 
+   Use one of the two per machine: Claude Code keeps one `boardroom` marketplace per user, so adding it from
+   GitHub switches every workspace on that machine to GitHub, and running `install.sh` switches them back.
+
 2. Open the workspace in Claude Code, start a **new** session, and run `/boardroom:setup`. It asks where your
    products are (folders and/or git URLs), finds the repos, asks a few questions and writes the workspace files.
 3. Call a meeting: `/boardroom:meeting` (all products) or `/boardroom:meeting <product> <topic>`.
