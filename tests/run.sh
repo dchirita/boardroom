@@ -23,7 +23,7 @@ git -C "$repo" config user.email t@t; git -C "$repo" config user.name t
 mkdir -p "$repo/src" "$repo/assets" "$repo/keys"
 printf '# Shop\nSells things.\n' > "$repo/README.md"
 printf 'line1\nif (req.header("x-premium") === "yes") { premium = true }\nline3\n' > "$repo/src/auth.js"
-printf -- '-----BEGIN PRIVATE KEY-----\nsecret\n' > "$repo/keys/AuthKey_TEST.p8"
+printf -- '-----BEGIN %s-----\nsecret\n' "PRIVATE KEY" > "$repo/keys/AuthKey_TEST.p8"
 printf 'API_KEY=example\n' > "$repo/.env.example"
 printf 'binary' > "$repo/assets/logo.png"
 printf '{ "name": "shop", "version": "1.2.3" }\n' > "$repo/package.json"
@@ -123,6 +123,19 @@ printf 'Nothing cited.\n' > "$tmp/none.md"
 check "valid citations pass" '"$scripts/check-citations.sh" "$ws" "$tmp/good.md" >/dev/null'
 check "broken citations fail" '! "$scripts/check-citations.sh" "$ws" "$tmp/bad.md" >/dev/null && [ "$("$scripts/check-citations.sh" "$ws" "$tmp/bad.md" | grep -c BROKEN)" = 2 ]'
 check "look-alikes are not citations" '"$scripts/check-citations.sh" "$ws" "$tmp/lookalike.md" | grep -q "1 ok, 0 broken"'
+
+# Secret scanner. The values are fake, and built at run time so this file holds nothing shaped like a secret.
+{
+  echo 'The key in `shop:keys/AuthKey_TEST.p8:1` is tracked in git.'
+  echo "aws AKIA""ABCDEFGHIJKLMNOP"
+  echo "openai sk-""proj-abcdefghijklmnopqrstuvwxyz012345"
+  at="@"; echo "db postgres://admin:hunter2pass${at}db.example.com/app"
+  echo "config api_key = \"abcdef""1234567890abcdef\""
+} > "$tmp/leaky.md"
+printf 'Clean minutes: the header check is at `shop:src/auth.js:2`.\n' > "$tmp/clean.md"
+check "secret scanner finds four kinds" '! "$scripts/scan-secrets.sh" "$tmp/leaky.md" >/dev/null && [ "$("$scripts/scan-secrets.sh" "$tmp/leaky.md" | grep -c "^SECRET?")" = 4 ]'
+check "secret scanner never prints the value" '! "$scripts/scan-secrets.sh" "$tmp/leaky.md" | grep -q hunter2pass'
+check "secret scanner passes clean minutes" '"$scripts/scan-secrets.sh" "$tmp/clean.md" >/dev/null'
 set +e; "$scripts/check-citations.sh" "$ws" "$tmp/none.md" >/dev/null; rc=$?; set -e
 check "no citations is reported" '[ "$rc" = 2 ]'
 

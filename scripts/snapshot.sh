@@ -172,7 +172,9 @@ branch_row() {
     echo "Read from the remote: branches above are the pushed ones; local unpushed work is not visible."
   else
     current=$(git -C "$repo" branch --show-current)
-    dirty=$(git --no-optional-locks -C "$repo" status --porcelain | awk 'END { print NR }')
+    # fsmonitor and the untracked cache could run or write something configured in the product repo; switch them off.
+    dirty=$(git --no-optional-locks -c core.fsmonitor=false -c core.untrackedCache=false -C "$repo" status --porcelain \
+      | awk 'END { print NR }')
     echo "Checked out in the product folder now: \`${current:-detached}\`, $dirty uncommitted files."
   fi
   echo

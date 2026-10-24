@@ -96,16 +96,17 @@ come from the meeting, so every seat follows them. Keep the board at 7 or fewer:
    It also writes `.snap/<id>.facts.md`: commit, version, last commits, documents, redacted files, and the
    branches in progress with their size (flagged LARGE above the limits in `board.yml`). The snapshot is reused
    until the branch moves.
-2. **Data and notes.** The `data` commands from `board.yml` run and their output goes to `.snap/data.md`;
-   `notes` folders are copied to `.snap/notes/`.
+2. **Data and notes.** The `data` commands from `board.yml` run, after you approve any that are new or changed,
+   and their output goes to `.snap/data.md`; `notes` folders are copied to `.snap/notes/`.
 3. **Reports.** The members work in parallel: observations with citations, up to three proposals each
    (impact, cost, metric, target, date), concerns, unknowns.
 4. **Challenge.** One round: each member reads all reports and supports, objects to or amends others' proposals,
    with reasons, and checks the OM/AI and compatibility labels. Agreement is allowed.
 5. **Synthesis.** The co-CEO agent: what you must do, follow-up on past decisions, surviving proposals ranked, recommendation,
    what to stop, the weakest proposal, what nobody proposed, questions for you.
-6. **Minutes** go to `meetings/<date>-<topic>.md`, and `scripts/check-citations.sh` checks that every cited
-   `<id>:<path>:<line>` exists in the snapshot.
+6. **Minutes** go to `meetings/<date>-<topic>.md`. `scripts/scan-secrets.sh` looks for secret-like strings and
+   they are replaced with `[REDACTED]`; `scripts/check-citations.sh` checks that every cited `<id>:<path>:<line>`
+   exists in the snapshot.
 
 ## Why the board reads copies, not the product folders
 
@@ -117,8 +118,9 @@ with unsaved changes. So each meeting reads a copy of the reference branch, made
 - making it touches nothing in the product repo: no checkout, no worktree, no lock on the branch;
 - it is small (media and vendored files are left out) and reused until the branch moves.
 
-The alternatives were worse: a `git worktree` of `main` writes into the product's `.git` and stops anyone else from
-checking out `main`; letting members run `git show` gives them a shell, which is harder to keep read-only.
+The alternatives were worse: a `git worktree` writes into the product's `.git`, runs its checkout hooks and filters
+and copies everything unredacted (and, unless detached, stops anyone else from checking out `main`); letting members
+run `git show` gives them a shell, which cannot be kept read-only.
 
 ## What install.sh does
 
@@ -131,18 +133,38 @@ claude plugin install boardroom@boardroom --scope project
 
 This registers Boardroom and writes it to the workspace's `.claude/settings.json`. Writing that file by hand is
 not enough: the plugin is only registered by these commands. Running `install.sh` again is safe; after moving the
-folders it registers the new path. It finds the git repos around it, asks what it needs,
-and writes `board.yml`, `CLAUDE.md`, `DECISIONS.md` and `.gitignore`. Then: `/boardroom:meeting [product] [topic]`.
+folders it registers the new path.
 
 ## Safety
 
-- The board is read-only on your products: members can only read files, and the scripts read the products
-  through git without touching their working folders.
-- The `data` commands in `board.yml` run on your machine, as you, before each meeting. Put there only commands
-  you trust and that only read.
+What Boardroom does to protect your repos and secrets:
+
+- **Read-only on your products.** Members can only read files (Read, Grep, Glob; the growth seat can also search
+  the web). The scripts read products through git (`git archive`, `log`, `for-each-ref`) without touching their
+  working folders, index or branches; the products' git filters, fsmonitor and hooks are switched off or never run.
+  A product given by URL is cloned, bare, into the workspace's `.repos/`, never into your folders.
+- **Secrets stay out of the copies.** Secret-like files (`*.p8`, `*.pem`, `.env*`, `GoogleService-Info.plist`, …) are
+  kept by name with their content replaced; symlinks are replaced by a note, so nothing points outside the copy.
+- **Secrets stay out of the minutes.** Members are told never to quote a secret, only to name where it is; the
+  minutes are then scanned for secret-like strings and any hit is replaced with `[REDACTED]`.
+- **Commands run only with your approval.** The `data` commands in `board.yml` run on your machine, as you. A
+  meeting asks you before running any command that is new or changed since the last approved run.
+
+What it cannot do for you:
+
+- Pattern matching does not catch every secret. A key hard-coded in a file with an ordinary name is in the copy and
+  may be read by a member; read minutes before you share or commit them.
 - Members read code, notes and web pages that may contain text written to manipulate an AI. They are told to treat
-  it as data, and they cannot act on it, but read the minutes with that in mind.
-- Boardroom sends nothing anywhere by itself; what leaves your machine is what Claude Code sends to the model.
+  it as data and they cannot write or run anything, but the growth seat can search the web. Remove that seat
+  (`members` in `board.yml`) if you do not want any web access.
+- Everything the members read is sent to the model provider by Claude Code, under your account and its terms.
+
+## Terms of use
+
+Boardroom is provided "as is", without warranty of any kind, under the [MIT License](LICENSE). By using it you
+accept the [disclaimer](DISCLAIMER.md). In short: you alone are responsible for your repositories, keys,
+credentials and data, for the commands you put in `board.yml`, for the costs of running it (tokens, API usage), and
+for any decision you take. The board's output is not legal, financial, security or investment advice.
 
 No support is promised; issues and pull requests are welcome.
 
@@ -152,7 +174,9 @@ No support is promised; issues and pull requests are welcome.
 tests/run.sh
 ```
 
-Builds a throwaway product repo with a planted security issue, a secret, media and two branches, and checks the
-snapshot, redaction, work-in-progress detection, caching and the citation checker. Needs bash, git and rsync.
+Builds throwaway product repos (with a planted security issue, a fake secret, media, side branches, an orphan
+branch, a same-name tag, a git filter and a symlink) and checks the snapshot, redaction, work-in-progress
+detection, caching, URL sources, that nothing is written in the product's `.git`, notes, the citation checker and
+the secret scanner. Needs bash, git and rsync.
 For an end-to-end check, run a meeting on a workspace and look for: every section present, citations passing,
 product repos unchanged (`git status`), and the board finding known issues by itself.

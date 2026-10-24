@@ -81,7 +81,8 @@ New or changed seats take effect in the next session (agents load at session sta
 
 Run `${CLAUDE_PLUGIN_ROOT}/scripts/snapshot.sh <ws> <id> <repo or path> <branch> <max_files> <max_days>` for every
 product (only the changed ones when editing), with `<ws>` the absolute path of this folder, and each data command
-once, in a subshell: `(cd <ws> && <run>)`. A URL is cloned into `.repos/` on first
+the user chose in section 2 once, in a subshell: `(cd <ws> && <run>)`. Never run a data command the user has not
+seen and approved, including one already in `board.yml` that you did not ask about. A URL is cloned into `.repos/` on first
 use; if cloning fails, say that git access to that URL is missing and leave the entry for the user to fix. Report in
 a few lines: products and the commit each will be read at, work in progress flagged LARGE, redacted secret-like
 files, which data commands worked. Then say the workspace is ready for `/boardroom:meeting`, and that products can
