@@ -11,18 +11,32 @@ You are the other co-CEO: you decide.
 
 ## Quick start
 
-1. Pick a workspace folder for your board, anywhere (for example `~/board`), and install:
+1. Pick a workspace folder for your board, anywhere (for example `~/board`), and install Boardroom into it.
+
+   **From GitHub**, nothing to clone. In the workspace folder:
 
    ```bash
-   ./install.sh ~/board
+   claude plugin marketplace add dchirita/boardroom --scope project
+   claude plugin install boardroom@boardroom --scope project
    ```
+
+   Update later with `claude plugin marketplace update boardroom` and `claude plugin update boardroom@boardroom`.
+
+   **From a clone**, to change Boardroom yourself:
+
+   ```bash
+   git clone https://github.com/dchirita/boardroom.git
+   boardroom/install.sh ~/board
+   ```
+
+   The workspace then reads Boardroom from your clone: after changing it, start a new session in the workspace
+   (or run `/reload-plugins`). No reinstall needed.
 
 2. Open the workspace in Claude Code, start a **new** session, and run `/boardroom:setup`. It asks where your
    products are (folders and/or git URLs), finds the repos, asks a few questions and writes the workspace files.
 3. Call a meeting: `/boardroom:meeting` (all products) or `/boardroom:meeting <product> <topic>`.
 
-The workspace reads Boardroom from this folder: after changing it, start a new session in the workspace
-(or run `/reload-plugins`). No reinstall needed.
+Needs Claude Code (CLI or the Claude desktop app), git, bash and rsync; macOS or Linux.
 
 A workspace after setup:
 
